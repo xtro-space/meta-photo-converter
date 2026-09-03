@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Glasses Photo Studio | 100% Private</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="glow-backdrop"></div>
+
+    <main class="container">
+        <header class="app-header">
+            <div class="badge">
+                <span class="pulse-dot"></span>
+                <span>On-Device Sandbox Active</span>
+            </div>
+            <h1>Meta Smart Glasses Converter</h1>
+            <p>Optimize, format, and preview any JPG/JPEG for Meta Ray-Ban wearables without exposing your data.</p>
+        </header>
+
+        <section class="upload-section">
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept="image/jpeg, image/jpg" hidden>
+                <div class="drop-content">
+                    <div class="icon-circle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h3>Drop your JPG image here</h3>
+                    <p>or <button type="button" class="btn-link" id="browseBtn">browse files</button> from your device</p>
+                    <span class="file-specs">Strictly client-side • Supports .jpg & .jpeg</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="workspace hidden" id="workspace">
+            <div class="editor-grid">
+                
+                <div class="preview-panel">
+                    <div class="panel-header">
+                        <h4>Live Output Preview</h4>
+                        <span class="dimension-tag" id="resolutionTag">0 x 0</span>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="previewCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <h3>Optimization Settings</h3>
+
+                    <div class="control-group">
+                        <label for="aspectRatio">Target Preset (Wearable Specs)</label>
+                        <select id="aspectRatio">
+                            <option value="3:4" selected>Meta Standard Portrait (3:4 — 2272 × 3024)</option>
+                            <option value="1:1">Meta Square Capture (1:1 — 2048 × 2048)</option>
+                            <option value="9:16">Story / Vertical Max (9:16 — 1080 × 1920)</option>
+                            <option value="original">Original Aspect Ratio (High-Res Clean)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Framing Strategy</label>
+                        <div class="segmented-control">
+                            <input type="radio" name="fitMode" id="fitCover" value="cover" checked>
+                            <label for="fitCover">Smart Fill (Crop)</label>
+                            
+                            <input type="radio" name="fitMode" id="fitContain" value="contain">
+                            <label for="fitContain">Fit (Letterbox)</label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="slider-header">
+                            <label for="qualitySlider">Export Quality</label>
+                            <span id="qualityVal">92%</span>
+                        </div>
+                        <input type="range" id="qualitySlider" min="50" max="100" value="92">
+                    </div>
+
+                    <div class="file-meta">
+                        <div class="meta-item">
+                            <span>Input File</span>
+                            <strong id="fileName">-</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Est. Output Size</span>
+                            <strong id="outputSize">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="downloadBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Export & Save
+                        </button>
+                        <button class="btn btn-secondary" id="resetBtn">Clear</button>
+                    </div>
+
+                    <div class="privacy-notice">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Zero telemetry. Photos never leave your browser RAM.</span>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
