@@ -4,16 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meta Glasses Photo Studio | 100% Private</title>
+    
+    <!-- Styling -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Client-side EXIF manipulation library -->
+    <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
 </head>
 <body>
 
     <div class="glow-backdrop"></div>
 
     <main class="container">
+        <!-- Header -->
         <header class="app-header">
             <div class="badge">
                 <span class="pulse-dot"></span>
@@ -23,6 +31,7 @@
             <p>Optimize, format, and preview any JPG/JPEG for Meta Ray-Ban wearables without exposing your data.</p>
         </header>
 
+        <!-- Drop Zone -->
         <section class="upload-section">
             <div class="drop-zone" id="dropZone">
                 <input type="file" id="fileInput" accept="image/jpeg, image/jpg" hidden>
@@ -41,9 +50,11 @@
             </div>
         </section>
 
+        <!-- Editor & Preview Panel (Hidden until file selected) -->
         <section class="workspace hidden" id="workspace">
             <div class="editor-grid">
                 
+                <!-- Preview Canvas Card -->
                 <div class="preview-panel">
                     <div class="panel-header">
                         <h4>Live Output Preview</h4>
@@ -54,6 +65,7 @@
                     </div>
                 </div>
 
+                <!-- Controls Panel -->
                 <div class="controls-panel">
                     <h3>Optimization Settings</h3>
 
