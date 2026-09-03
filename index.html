@@ -7,24 +7,22 @@
     
     <link rel="stylesheet" href="style.css">
     
-    <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
-    <!-- EXIF Binary Injector -->
+    <!-- EXIF Binary Manipulation Engine -->
     <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
 </head>
 <body>
 
-    <!-- Dynamic Neon Lighting -->
     <div class="ambient-glow glow-blue"></div>
     <div class="ambient-glow glow-cyan"></div>
 
     <div class="app-wrapper">
         <main class="glass-card">
             
-            <!-- Header Section with Kabir Headline -->
             <header class="studio-header">
                 <div class="tech-pill">
                     <span class="live-dot"></span>
@@ -36,10 +34,10 @@
                     <span class="glow-text">Meta Studio</span>
                 </h1>
                 
-                <p class="subtitle">Convert any photo to authentic Ray-Ban Meta Gen 2 hardware specs for native Instagram detection.</p>
+                <p class="subtitle">Patch raw JPG files with native Ray-Ban Meta Gen 2 hardware markers and share directly to Instagram.</p>
             </header>
 
-            <!-- Drop / Selection Zone -->
+            <!-- File Upload Dropzone -->
             <div class="drop-zone" id="dropZone">
                 <input type="file" id="fileInput" accept=".jpg, .jpeg" hidden>
                 
@@ -51,15 +49,14 @@
                             <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
                     </div>
-                    <h3>Upload High-Res JPG</h3>
+                    <h3>Upload JPG Photo</h3>
                     <p>Drag & drop or tap to browse from gallery</p>
-                    <div class="specs-mini">Full Sensor • Auto 12MP Mapping</div>
+                    <div class="specs-mini">Direct Binary Patching • Lossless Quality</div>
                 </div>
             </div>
 
-            <!-- Interactive Conversion Canvas (Appears on file drop) -->
+            <!-- Editor & Native Share Section -->
             <div class="editor-area hidden" id="editorArea">
-                
                 <div class="preview-container">
                     <div class="lens-overlay">
                         <span class="lens-tag">RAY-BAN META GEN 2 • 12MP f/2.2</span>
@@ -69,34 +66,35 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <span class="stat-label">File</span>
+                        <span class="stat-label">Source File</span>
                         <strong class="stat-value" id="fileLabel">-</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Hardware Target</span>
+                        <span class="stat-label">Camera Profile</span>
                         <strong class="stat-value highlight">Meta Ultra-Wide</strong>
                     </div>
                 </div>
 
                 <button class="action-btn" id="exportBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                     </svg>
-                    Inject Meta Signature & Download
+                    Share / Save Meta Photo
                 </button>
 
                 <button class="secondary-btn" id="resetBtn">Choose Another Image</button>
             </div>
 
-            <!-- Footer Badge -->
             <footer class="footer-meta">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span>Zero cloud upload. Processed entirely inside your device RAM.</span>
+                <span>Zero server transmission. Processed entirely inside your device RAM.</span>
             </footer>
 
         </main>
