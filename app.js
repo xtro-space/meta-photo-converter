@@ -1,150 +1,126 @@
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-const browseBtn = document.getElementById('browseBtn');
-const workspace = document.getElementById('workspace');
-const canvas = document.getElementById('previewCanvas');
-const ctx = canvas.getContext('2d');
-const downloadBtn = document.getElementById('downloadBtn');
+const editorArea = document.getElementById('editorArea');
+const imagePreview = document.getElementById('imagePreview');
+const fileLabel = document.getElementById('fileLabel');
+const exportBtn = document.getElementById('exportBtn');
 const resetBtn = document.getElementById('resetBtn');
-const fileNameLabel = document.getElementById('fileName');
-const outputSizeLabel = document.getElementById('outputSize');
-const resolutionTag = document.getElementById('resolutionTag');
 
-let sourceImage = null;
-let currentFileName = 'converted.jpg';
+let originalBinaryData = null;
+let currentFileName = 'meta_photo.jpg';
 
-// Meta Ray-Ban glasses strictly output 3024 x 4032 portrait captures
-const TARGET_WIDTH = 3024;
-const TARGET_HEIGHT = 4032;
-
-browseBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileInput.click();
-});
-
+// File Pickers
 dropZone.addEventListener('click', () => fileInput.click());
 
 fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length) processFile(e.target.files[0]);
+    if (e.target.files.length) handleFile(e.target.files[0]);
 });
 
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
+
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
 dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
 });
 
-function processFile(file) {
+function handleFile(file) {
     if (!file.type.match('image/jpeg')) {
-        alert('Please upload a valid JPG/JPEG file.');
+        alert('Please provide a valid JPG or JPEG image.');
         return;
     }
 
     currentFileName = file.name;
-    fileNameLabel.textContent = file.name;
+    fileLabel.textContent = file.name.length > 22 ? file.name.substring(0, 19) + '...' : file.name;
 
+    // Read directly as DataURL for lossless binary extraction (No Canvas re-rendering)
     const reader = new FileReader();
     reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-            sourceImage = img;
-            workspace.classList.remove('hidden');
-            dropZone.style.display = 'none';
-            renderCanvas();
-        };
-        img.src = e.target.result;
+        originalBinaryData = e.target.result;
+        imagePreview.src = originalBinaryData;
+        dropZone.style.display = 'none';
+        editorArea.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
 
-function renderCanvas() {
-    canvas.width = TARGET_WIDTH;
-    canvas.height = TARGET_HEIGHT;
-    resolutionTag.textContent = `${TARGET_WIDTH} × ${TARGET_HEIGHT}`;
-
-    // Fill black canvas
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
-
-    // Smart Fill / Cover scaling
-    const hRatio = TARGET_WIDTH / sourceImage.width;
-    const vRatio = TARGET_HEIGHT / sourceImage.height;
-    const ratio = Math.max(hRatio, vRatio);
-
-    const renderW = sourceImage.width * ratio;
-    const renderH = sourceImage.height * ratio;
-    const offsetX = (TARGET_WIDTH - renderW) / 2;
-    const offsetY = (TARGET_HEIGHT - renderH) / 2;
-
-    ctx.drawImage(sourceImage, 0, 0, sourceImage.width, sourceImage.height, offsetX, offsetY, renderW, renderH);
-    outputSizeLabel.textContent = "~2.8 MB";
+// Generate valid EXIF timestamp
+function getExifDate() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}:${pad(d.getMonth() + 1)}:${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-// Download Handler: Strips generated header and injects complete Meta binary tags
-downloadBtn.addEventListener('click', () => {
-    if (!sourceImage) return;
-
-    // Export raw base64 JPEG from Canvas (Quality 0.95 matches Meta View app default)
-    const base64Data = canvas.toDataURL('image/jpeg', 0.95);
-
-    if (typeof piexif === 'undefined') {
-        alert('piexifjs library missing!');
-        return;
-    }
+// Binary Metadata Patching for Ray-Ban Meta Wearables
+exportBtn.addEventListener('click', () => {
+    if (!originalBinaryData) return;
 
     try {
+        const timeNow = getExifDate();
+
+        // 1. Primary IFD (Zero IFD) tags
         const zeroth = {};
-        const exif = {};
-        const gps = {};
-
-        // Accurate Meta Ray-Ban Gen 2 Specs required by Instagram's parser
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const dateStr = `${now.getFullYear()}:${pad(now.getMonth()+1)}:${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
         zeroth[piexif.ImageIFD.Make] = "Meta\u0000";
         zeroth[piexif.ImageIFD.Model] = "Ray-Ban Meta Smart Glasses\u0000";
-        zeroth[piexif.ImageIFD.Software] = "Meta View\u0000";
+        zeroth[piexif.ImageIFD.Software] = "Meta View 160.0.0\u0000";
+        zeroth[piexif.ImageIFD.DateTime] = timeNow;
         zeroth[piexif.ImageIFD.Orientation] = 1;
-        zeroth[piexif.ImageIFD.DateTime] = dateStr;
-        zeroth[piexif.ImageIFD.XResolution] = [72, 1];
-        zeroth[piexif.ImageIFD.YResolution] = [72, 1];
-        zeroth[piexif.ImageIFD.ResolutionUnit] = 2;
 
-        exif[piexif.ExifIFD.DateTimeOriginal] = dateStr;
-        exif[piexif.ExifIFD.DateTimeDigitized] = dateStr;
+        // 2. Hardware Sensor Sub-IFD (Exact Ray-Ban 12MP Ultra-Wide configuration)
+        const exif = {};
+        exif[piexif.ExifIFD.DateTimeOriginal] = timeNow;
+        exif[piexif.ExifIFD.DateTimeDigitized] = timeNow;
         exif[piexif.ExifIFD.LensMake] = "Meta\u0000";
-        exif[piexif.ExifIFD.LensModel] = "Ray-Ban Meta Camera\u0000";
-        exif[piexif.ExifIFD.FNumber] = [22, 10]; // f/2.2
-        exif[piexif.ExifIFD.FocalLength] = [218, 100]; // 2.18mm
-        exif[piexif.ExifIFD.FocalLengthIn35mmFilm] = 12;
+        exif[piexif.ExifIFD.LensModel] = "Ray-Ban Meta Ultra-wide Camera\u0000";
+        exif[piexif.ExifIFD.FNumber] = [22, 10]; // f/2.2 fixed aperture
+        exif[piexif.ExifIFD.FocalLength] = [218, 100]; // 2.18mm fixed focal length
+        exif[piexif.ExifIFD.FocalLengthIn35mmFilm] = 12; // 12mm equivalent
         exif[piexif.ExifIFD.ISOSpeedRatings] = 100;
-        exif[piexif.ExifIFD.PixelXDimension] = TARGET_WIDTH;
-        exif[piexif.ExifIFD.PixelYDimension] = TARGET_HEIGHT;
-        exif[piexif.ExifIFD.ColorSpace] = 1;
+        exif[piexif.ExifIFD.ExposureTime] = [1, 120];
+        exif[piexif.ExifIFD.ExposureProgram] = 2; // Normal program
+        exif[piexif.ExifIFD.MeteringMode] = 5; // Multi-segment
+        exif[piexif.ExifIFD.ColorSpace] = 1; // sRGB
 
-        const exifObj = { "0th": zeroth, "Exif": exif, "GPS": gps };
+        // 3. Maker Tag & UserComment (Crucial signature checked by Instagram filters)
+        exif[piexif.ExifIFD.UserComment] = "Captured with Ray-Ban Meta Smart Glasses\u0000";
+        exif[piexif.ExifIFD.BodySerialNumber] = "RBM-G2-W-01\u0000";
+
+        const exifObj = {
+            "0th": zeroth,
+            "Exif": exif,
+            "GPS": {}
+        };
+
+        // Binary dump & strip any preexisting conflict headers
         const exifBytes = piexif.dump(exifObj);
         
-        // Inject into binary stream
-        const finalData = piexif.insert(exifBytes, base64Data);
+        // Remove old headers and insert new Meta Ray-Ban payload directly
+        const cleanBinary = piexif.remove(originalBinaryData);
+        const patchedJpeg = piexif.insert(exifBytes, cleanBinary);
 
+        // Download processed file
         const a = document.createElement('a');
-        a.href = finalData;
-        a.download = `meta_glasses_${Date.now()}.jpg`;
+        const baseName = currentFileName.replace(/\.[^/.]+$/, "");
+        a.href = patchedJpeg;
+        a.download = `RayBan_Meta_${baseName}.jpg`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+
     } catch (err) {
-        console.error('Failed to convert:', err);
+        console.error('Patching error:', err);
+        alert('Failed to patch JPEG metadata. Make sure the file is a standard JPG.');
     }
 });
 
 resetBtn.addEventListener('click', () => {
-    sourceImage = null;
+    originalBinaryData = null;
     fileInput.value = '';
-    workspace.classList.add('hidden');
+    editorArea.classList.add('hidden');
     dropZone.style.display = 'block';
 });
