@@ -129,6 +129,19 @@ function renderCanvas() {
     updateEstimatedSize();
 }
 
+// Helper: Format Current Timestamp to Standard EXIF Date String (YYYY:MM:DD HH:MM:SS)
+function getExifDateString() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const mm = pad(now.getMonth() + 1);
+    const dd = pad(now.getDate());
+    const hh = pad(now.getHours());
+    const min = pad(now.getMinutes());
+    const ss = pad(now.getSeconds());
+    return `${yyyy}:${mm}:${dd} ${hh}:${min}:${ss}`;
+}
+
 // Estimate Output Payload Size
 function updateEstimatedSize() {
     const quality = qualitySlider.value / 100;
@@ -149,22 +162,55 @@ qualitySlider.addEventListener('input', (e) => {
     updateEstimatedSize();
 });
 
-// Download & File Export
+// Download Handler with Meta Smart Glasses EXIF Injection
 downloadBtn.addEventListener('click', () => {
     if (!sourceImage) return;
 
     const quality = qualitySlider.value / 100;
-    canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const cleanName = currentFileName.replace(/\.[^/.]+$/, "");
-        a.href = url;
-        a.download = `meta_ready_${cleanName}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }, 'image/jpeg', quality);
+
+    // 1. Export raw base64 JPEG from canvas
+    const base64Data = canvas.toDataURL('image/jpeg', quality);
+
+    let finalDownloadUrl = base64Data;
+
+    // 2. Inject EXIF if piexifjs is available
+    if (typeof piexif !== 'undefined') {
+        try {
+            const zeroth = {};
+            const exif = {};
+            const gps = {};
+
+            const dateStr = getExifDateString();
+
+            // Device Identification
+            zeroth[piexif.ImageIFD.Make] = "Meta";
+            zeroth[piexif.ImageIFD.Model] = "Ray-Ban Meta Smart Glasses";
+            zeroth[piexif.ImageIFD.Software] = "Meta View Android/iOS";
+            zeroth[piexif.ImageIFD.DateTime] = dateStr;
+
+            // Technical Camera Profile
+            exif[piexif.ExifIFD.DateTimeOriginal] = dateStr;
+            exif[piexif.ExifIFD.DateTimeDigitized] = dateStr;
+            exif[piexif.ExifIFD.LensMake] = "Meta";
+            exif[piexif.ExifIFD.LensModel] = "Ultra-wide 12 MP camera";
+
+            const exifObj = { "0th": zeroth, "Exif": exif, "GPS": gps };
+            const exifBytes = piexif.dump(exifObj);
+
+            finalDownloadUrl = piexif.insert(exifBytes, base64Data);
+        } catch (err) {
+            console.warn('EXIF injection failed, falling back to clean JPEG:', err);
+        }
+    }
+
+    // 3. Trigger Browser Download
+    const a = document.createElement('a');
+    const cleanName = currentFileName.replace(/\.[^/.]+$/, "");
+    a.href = finalDownloadUrl;
+    a.download = `meta_ready_${cleanName}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 });
 
 // Reset State
